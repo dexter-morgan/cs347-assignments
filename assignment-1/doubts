@@ -1,3 +1,4 @@
 1) Malloc(): corrupted top size 
 	Why did we get this in proc/stat at 32 but not at 64 in the tokenize function over the line : "cpu  612562 973 166196 32794073 9618 0 31003 0 0 0"?
 2) why not freed the memory used by words? 
+3) added another doubt 
