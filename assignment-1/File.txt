@@ -1,0 +1,10 @@
+a.out
+CS347M-Assignment1.pdf
+doubts
+File.txt
+new.py
+q1.c
+q2.c
+q3.c
+shell.c
+shell.out

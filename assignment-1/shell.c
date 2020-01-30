@@ -6,9 +6,9 @@
 char **tokenize(char *line);
 void solve_q1(char **words);
 void solve_q2(char **words);
-/*void solve_q3(char **words);
+void solve_q3(char **words);
 void solve_q4(char **words);
-void solve_q5(char **words);*/
+//void solve_q5(char **words);*/
 
 int main()
 {
@@ -21,6 +21,9 @@ int main()
         char **words = tokenize(input);
         //printf("%s\n",words[0] );
         /** WRITE YOUR CODE HERE **/
+
+        if (strstr(input, ""))
+
         int rc = fork();
         if (rc < 0){
         	fprintf(stderr, "fork failed\n");
@@ -31,7 +34,9 @@ int main()
         	}else if (strcmp(words[0],"checkresidentmemory") == 0){
         		solve_q2(words);
         	}else if (strcmp(words[0],"listFiles") == 0){
-        		//solve_q3(words);
+        		solve_q3(words);
+        	}else if (strcmp(words[0],"sort") == 0){
+        		solve_q4(words);
         	}
         	else {
         		printf("invalid n" );
