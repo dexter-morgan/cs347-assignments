@@ -110,5 +110,4 @@ void solve_q1(char **words){
     int st = 100*(stime_after - stime_before) / (total_time_after - total_time_before);
 	printf("User Mode CPU Percentage: %d\n", ut);
     printf("System Mode CPU Percentage: %d\n", st);
-    exit(0);
 }

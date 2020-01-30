@@ -11,5 +11,4 @@ void solve_q2(char **words){
 	myargs[3] = words[1];
 	myargs[4] = NULL;
 	execve("/usr/bin/ps",myargs);
-	printf("siuhfushushduishdsuh\n");
 } 

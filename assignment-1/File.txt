@@ -6,5 +6,8 @@ new.py
 q1.c
 q2.c
 q3.c
+q4.c
+q5.c
 shell.c
 shell.out
+sort.txt

@@ -21,5 +21,4 @@ void solve_q4(char **words){
 		close(new_fd);
 		dup2(fd,0);
 	}
-	exit(0);
 }
