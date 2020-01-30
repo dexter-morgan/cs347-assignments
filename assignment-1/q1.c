@@ -7,16 +7,18 @@
 char **tokenize(char *input);
 
 char **return_u_and_s(char *pid){
-    char **u_and_s = (char **) malloc(3 * sizeof(char *));
-    FILE *fp;
+   
+   char **u_and_s = (char **) malloc(3 * sizeof(char *));
+   FILE *fp;
    char str[30];
    int count = 0;
 
    char location[40] = "/proc/";
-    strcat(location, pid);
-    strcat(location,"/stat");
+   strcat(location, pid);
+   strcat(location,"/stat");
    
    fp = fopen( location, "r");
+
    if(fp == NULL) {
       perror("Error opening file");
       return(-1);
@@ -26,12 +28,8 @@ char **return_u_and_s(char *pid){
     size_t len = 0;
     ssize_t read;
 
-    
-
     if ((read = getline(&line, &len, fp)) != -1) {
-        //printf("Retrieved line of length %zu:\n", read);
         char **stats = tokenize(line);
-        //printf("%s %s\n",stats[13],stats[14] );
         u_and_s[0] = stats[13];
         u_and_s[1] = stats[14];
     }
@@ -46,13 +44,13 @@ char **return_u_and_s(char *pid){
 }
 
 int return_cpu_sum(){
-    int cpu_sum = 0;
-    FILE *fp;
+   int cpu_sum = 0;
+   FILE *fp;
    char str[30];
    int count = 0;
 
    char location[40] = "/proc/";
-    strcat(location,"stat");
+   strcat(location,"stat");
    
    fp = fopen( location, "r");
    if(fp == NULL) {
@@ -60,25 +58,19 @@ int return_cpu_sum(){
       return(-1);
    }
 
-    char * line = NULL;
-    size_t len = 0;
-    ssize_t read;
+   char * line = NULL;
+   size_t len = 0;
+   ssize_t read;
 
-    
-
-    if ((read = getline(&line, &len, fp)) != -1) {
-        //printf("Retrieved line of length %zu:\n", read);
-        //printf("%s\n", line );
+   if ((read = getline(&line, &len, fp)) != -1) {
         char **stats = tokenize(line);
-        //printf("%d %s\n",atoi(stats[2]),stats[1]);
         int j = 0;
-        while (stats[j]!=NULL){
-        cpu_sum += atoi(stats[j]);
-        j++;
-        }
-        //printf("%d\n", cpu_sum );
-    }
 
+        while (stats[j]!=NULL){
+	        cpu_sum += atoi(stats[j]);
+	        j++;
+        }
+    }
 
     fclose(fp);
     if (line)
