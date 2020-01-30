@@ -1,0 +1,11 @@
+CS347M-Assignment1.pdf
+doubts
+File.txt
+q1.c
+q2.c
+q3.c
+q4.c
+shell
+shell.c
+shell.out
+sort.txt

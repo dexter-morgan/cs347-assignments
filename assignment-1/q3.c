@@ -12,10 +12,8 @@ void solve_q3(char **words)
 	int rc2 = fork();
 	if (rc2 == 0)
 	{
-		char *myargs[2];
-		myargs[0] = "ls";
-		myargs[1] = NULL;
-		execv("/usr/bin/ls", myargs);
+		char *myargs[] = {"ls", 0};
+		execvp(myargs[0], myargs);
 	}
 	else
 	{

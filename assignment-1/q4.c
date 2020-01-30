@@ -11,10 +11,8 @@ void solve_q4(char **words){
 	int new_fd = open("./sort.txt", O_RDONLY, S_IRWXU);
 	int rc2 = fork();
 	if (rc2 == 0){
-		char *myargs[2];
-		myargs[0] = "sort";
-		myargs[1] = NULL;
-		execv("/usr/bin/sort",myargs);
+		char *myargs[] = {"sort",0};
+		execvp(myargs[0],myargs);
 	}
 	else{
 		wait(NULL);
