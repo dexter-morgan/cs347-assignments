@@ -4,7 +4,6 @@
 #include <ctype.h>
 
 char **tokenize(char *line);
-char **tokenize_multiple(char *line);
 
 void solve_q1(char **words);
 void solve_q2(char **words);
@@ -16,25 +15,14 @@ void execute_child(char **words);
 int main()
 {
 	char input[1024];
-	char input2[1024];
 	while (1)
 	{
 		printf("myshell> ");
 		memset(input, 0, sizeof(input));
 		gets(input);
-		strcpy(input2, input);
-		printf("\n\ninput 2 : %s \n input 1 :  %S \n\n\n", input2, input);
 		char **words = tokenize(input);
-		// printf("\n\n\n after tokenize : input 2 : %s \n input 1 :  %S \n", input2, input);
+
 		/** WRITE YOUR CODE HERE **/
-		// printf("here is the input command : %s", input);
-		char **commands = tokenize_multiple(input2);
-		int m = 0;
-		// while (commands[m] != NULL)
-		// {
-		// 	printf("%s \n", commands[m]);
-		// 	m++;
-		// }
 
 		if (strcmp(words[0], "exit") == 0)
 		{
@@ -121,7 +109,7 @@ int main()
 char **tokenize(char *input)
 {
 	int count = 0;
-	char **tokens = (char **)malloc(32 * sizeof(char *));
+	char **tokens = (char **)malloc(64 * sizeof(char *));
 	char *sch;
 	sch = strtok(input, " \t\n");
 
@@ -130,26 +118,6 @@ char **tokenize(char *input)
 		tokens[count] = sch;
 		count++;
 		sch = strtok(NULL, " \t\n");
-	}
-
-	free(sch);
-	tokens[count] = NULL;
-	return tokens;
-}
-
-char **tokenize_multiple(char *input)
-{
-	int count = 0;
-	char **tokens = (char **)malloc(32 * sizeof(char *));
-	char *sch;
-	sch = strtok(input, ";");
-
-	while (sch != NULL)
-	{
-		printf("%s\n", sch);
-		tokens[count] = sch;
-		count++;
-		sch = strtok(NULL, ";");
 	}
 
 	free(sch);

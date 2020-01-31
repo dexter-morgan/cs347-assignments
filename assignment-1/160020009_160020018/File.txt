@@ -1,5 +1,3 @@
-160020009_160020018
-a.out
 CS347M-Assignment1.pdf
 doubts
 File.txt
