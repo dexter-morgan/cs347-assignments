@@ -1,0 +1,8 @@
+To compile: make all 
+To execute: ./sched
+
+FCFS    : 1
+STCF    : 2
+SJF     : 3
+Lottery : 4  (assumed arrival time to be 0 for all processes and priorities should sum to 100)
+Exit    : 5
