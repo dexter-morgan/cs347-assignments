@@ -1,13 +1,21 @@
 #include "sched.h"
 #include <limits.h>
-#include<stdlib.h>
+#include <stdlib.h>
+
+int min ( int a, int b ) { return a < b ? a : b; }
 
 int next_process_lottery(struct processes *p, int np, int clock)
 {
   int next_pid;
   int j, counter = 0;
+  int sum_priority=0;
 
-  int winner = rand()%100;
+  for(j = 0; j < np; j++){
+    if (p[j].arrival_time<=clock)
+    sum_priority += p[j].priority;
+    }
+
+  int winner = rand()%sum_priority;
 
   for(j = 0; j < np; j++){
 
@@ -25,11 +33,27 @@ int next_process_lottery(struct processes *p, int np, int clock)
 
 int completed(struct processes *p, int np);
 
+int get_preemption_time_lottery(struct processes *p, int np, int next_pid, int clock, int time_slice){
+
+  int preemption_time = 0;
+
+    for(int j = 0; j < np; j++){
+
+          if(p[j].arrival_time>clock && p[j].arrival_time < clock + min(p[next_pid].remaining_time, time_slice)){
+            preemption_time = p[j].arrival_time ;
+            break;
+          }
+        }
+    return preemption_time;
+
+} 
+
 void lottery(struct processes *p, int np)
 {
 
+  
   for(int i = 0; i < np; i++){
-      printf("Enter priority for process ID  %d (out of 100) :\n", p[i].process_id);
+      printf("Enter priority for process ID  %d :\n", p[i].process_id);
       scanf("%d",&p[i].priority);
   }
 
@@ -62,9 +86,19 @@ void lottery(struct processes *p, int np)
       winning_count[next_pid]++;
       if(p[next_pid].finished==1) continue;
 
+      int preemption_time = get_preemption_time_lottery(p, np, next_pid, clock, time_slice);      
+
       if(p[next_pid].response_time == -1) p[next_pid].response_time = clock - p[next_pid].arrival_time;
 
-      if (p[next_pid].remaining_time>time_slice)
+      if (preemption_time){
+
+        p[next_pid].remaining_time = p[next_pid].remaining_time - (preemption_time-clock);
+        clock = preemption_time;
+        continue;
+
+      }
+
+      else if (p[next_pid].remaining_time>time_slice)
       {
         p[next_pid].remaining_time = p[next_pid].remaining_time - time_slice;
         clock += time_slice;

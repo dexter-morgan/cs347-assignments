@@ -1,6 +1,6 @@
 #include "sched.h"
 #include <limits.h>
-
+#include <stdlib.h>
 int next_process_stcf(struct processes *p, int np, int clock)
 {
   int min_remaining_time = INT_MAX;
@@ -64,7 +64,7 @@ void stcf(struct processes *p, int np)
 
   while(!completed(p, np)){
 
-      printf(" current clock moment : %d\n", clock);
+      // printf(" current clock moment : %d\n", clock);
       int next_pid = next_process_stcf(p, np, clock);
       int preemption_time = get_preemption_time(p, np, next_pid, clock);
       if (preemption_time){
