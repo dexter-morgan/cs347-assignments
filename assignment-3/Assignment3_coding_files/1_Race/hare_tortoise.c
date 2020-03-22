@@ -1,4 +1,6 @@
 #include "cs_thread.h"
+#include <pthread.h>
+
 
 struct Repositioning {
 	char player; 		// T for turtle and H for hare

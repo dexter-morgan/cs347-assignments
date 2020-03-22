@@ -12,26 +12,6 @@ int sleep_ms(int milliseconds);
 
 #include "hare_tortoise.c"
 
-int sleep_ms(int milliseconds)
-{
-    struct timespec ts;
-    int res;
-
-    if (milliseconds < 0)
-    {
-        errno = EINVAL;
-        return -1;
-    }
-
-    ts.tv_sec = milliseconds / 1000;
-    ts.tv_nsec = (milliseconds % 1000) * 1000000;
-
-    do {
-        res = nanosleep(&ts, &ts);
-    } while (res && errno == EINTR);
-
-    return res;
-}
 char w;
 int parseInput(const char* filename, struct race * race) {
     FILE* f = fopen(filename,"r");
