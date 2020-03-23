@@ -1,6 +1,26 @@
 #include "cs_thread.h"
 #include <pthread.h>
 
+int sleep_ms(int milliseconds)
+{
+    struct timespec ts;
+    int res;
+
+    if (milliseconds < 0)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    ts.tv_sec = milliseconds / 1000;
+    ts.tv_nsec = (milliseconds % 1000) * 1000000;
+
+    do {
+        res = nanosleep(&ts, &ts);
+    } while (res && errno == EINTR);
+
+    return res;
+}
 
 struct Repositioning {
 	char player; 		// T for turtle and H for hare
@@ -32,6 +52,13 @@ struct race {
 	int repositioning_count;			// number of elements in array of repositioning structure
 	
 	//	Add your custom variables here.
+	int race_finished;
+	double tortoise_time, hare_time;
+	int tortoise_distance, hare_distance;
+	struct lock tortoise_mutex, hare_mutex, reporter_mutex;
+	struct condition repositioning_cv;
+
+
 };
 void* Turtle(struct race *race);
 void* Hare(struct race *race);
@@ -61,6 +88,34 @@ char init(struct race *race)
 	loop or wait until somebody wins;
 	return T/H/B for winner (Turtle/Hare/Both end at same time)
 	*/
+	race->race_finished = 0;
+	race->tortoise_time = 0;
+	race->hare_time = 0;
+	race->tortoise_distance = 0;
+	race->hare_distance = 0;
+
+	lock_init(&race->tortoise_mutex);
+	lock_init(&race->hare_mutex);
+	lock_init(&race->reporter_mutex);
+
+	cond_init(&race->repositioning_cv);
+
+	/*void ** char_ptr_t, char_ptr_h, char_ptr_g, char_ptr_r;
+	char char_t, char_g, char_h, char_r;*/
+
+	pthread_t t, h, g, r;
+	pthread_create(&t, NULL, Turtle, race);
+	pthread_create(&h, NULL, Hare, race);
+	pthread_create(&g, NULL, God, race);
+	pthread_create(&r, NULL, Report, race);
+	
+	pthread_join(t, char_ptr_t);
+	pthread_join(h, char_ptr_h);
+	pthread_join(g, char_ptr_g);
+	pthread_join(r, char_ptr_r);
+
+	//char_h = char; ///who wins here, int or char to return
+
 	return '-'; 
 }
 
@@ -86,6 +141,24 @@ void* Turtle(struct race *race)
 		moveleg(3)
 		moveleg(4)
 	*/
+	while(race->tortoise_distance < race->finish_distance){
+		lock_acquire(&race->tortoise_mutex);
+		if(race->tortoise_distance + race->tortoise_speed < race->finish_distance){
+			sleep_ms(1);
+			race->tortoise_distance += race->tortoise_speed * 1;
+			race->tortoise_time += 1;
+			check_repositioning(race);
+		} else{
+			float rem_time = (race->finish_distance - race->tortoise_distance) / float(race->tortoise_speed);
+			sleep_ms(rem_time);
+			race->tortoise_time += rem_time;
+			race->tortoise_distance = race->finish_distance;
+			check_repositioning(race);
+			break;
+		}
+		lock_release(&race->tortoise_mutex);
+	}
+	lock_release(&race->tortoise_mutex);
 	return NULL;
   
 }
@@ -108,6 +181,30 @@ void* Hare(struct race *race)
 			Sleep(for_a_while);
 		RunLikeCrazy_A_bit();
 	*/
+	while(race->hare_distance < race->finish_distance){
+		lock_acquire(&race->hare_mutex);
+		if(race->hare_distance - race->tortoise_distance > race->hare_turtle_distance_for_sleep){
+			sleep_ms(race->hare_sleep_time);
+			race->hare_time += race->hare_sleep_time;
+			check_repositioning(race);
+		}
+		else{
+			if(race->hare_distance + race->hare_speed < race->finish_distance){
+				sleep_ms(1);
+				race->hare_distance += race->hare_speed * 1;
+				race->hare_time += 1;
+				check_repositioning(race);
+			} else{
+				float rem_time = (race->finish_distance - race->hare_distance) / float(race->hare_speed);
+				sleep_ms(rem_time);
+				race->hare_time += rem_time;
+				race->hare_distance = race->finish_distance;
+				break;
+			}
+			lock_release(&race->hare_mutex);
+		}
+	}
+	lock_release(&race->hare_mutex);
 	return NULL;
 }
 
@@ -126,6 +223,16 @@ void* God(struct race *race)
 	Pseudocode:
 		when time equals to Repositiong.time then move Repositioning.player by Repositioning.distance
 	*/
+	while(!(race->tortoise_distance >= race->finish_distance && race->hare_distance >= race->finish_distance)){
+		lock_acquire(&race->tortoise_mutex);
+		while(){
+			cond_wait(&repositioning_cv, &race->tortoise_mutex)
+		}
+		while(){
+			cond_wait(&repositioning_cv, &race->hare_mutex)
+		}
+		lock_acquire(&race->hare_mutex);
+	}
 	return NULL;
 }
 
