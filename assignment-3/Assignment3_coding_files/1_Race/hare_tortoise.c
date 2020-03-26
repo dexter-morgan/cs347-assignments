@@ -22,23 +22,6 @@ int sleep_ms(int milliseconds)
     return res;
 }
 
-void check_repositioning_hare(struct race *race)
-{
-	if(race->hare_time == race->reposition[race->current_repositioning_counter].time){
-		lock_release(&race->hare_mutex);
-		cond_signal(&race->repositioning_cv, &race->hare_mutex);
-		lock_acquire(&race->hare_mutex);
-	}
-}
-
-void check_repositioning_tortoise(struct race *race)
-{
-	if(race->tortoise_time == race->reposition[race->current_repositioning_counter].time){
-		lock_release(&race->tortoise_mutex);
-		cond_signal(&race->repositioning_cv, &race->tortoise_mutex);
-		lock_acquire(&race->tortoise_mutex);
-	}
-}
 
 struct Repositioning {
 	char player; 		// T for turtle and H for hare
@@ -83,6 +66,24 @@ void* Turtle(struct race *race);
 void* Hare(struct race *race);
 void* God(struct race *race);
 void* Report(struct race *race);
+
+void check_repositioning_hare(struct race *race)
+{
+	if(race->hare_time == race->reposition[race->current_repositioning_counter].time){
+		lock_release(&race->hare_mutex);
+		cond_signal(&race->repositioning_cv, &race->hare_mutex);
+		lock_acquire(&race->hare_mutex);
+	}
+}
+
+void check_repositioning_tortoise(struct race *race)
+{
+	if(race->tortoise_time == race->reposition[race->current_repositioning_counter].time){
+		lock_release(&race->tortoise_mutex);
+		cond_signal(&race->repositioning_cv, &race->tortoise_mutex);
+		lock_acquire(&race->tortoise_mutex);
+	}
+}
 
 char init(struct race *race)
 {
@@ -170,7 +171,7 @@ void* Turtle(struct race *race)
 			race->tortoise_time += 1;
 			check_repositioning_tortoise(race);//check repositioning function tbd
 		} else{
-			float rem_time = (race->finish_distance - race->tortoise_distance) / float(race->tortoise_speed);
+			float rem_time = (race->finish_distance - race->tortoise_distance) / (float)(race->tortoise_speed);
 			sleep_ms(rem_time);
 			race->tortoise_time += rem_time;
 			race->tortoise_distance = race->finish_distance;
@@ -217,7 +218,7 @@ void* Hare(struct race *race)
 				race->hare_time += 1;
 				check_repositioning_hare(race);
 			} else{
-				float rem_time = (race->finish_distance - race->hare_distance) / float(race->hare_speed);
+				float rem_time = (race->finish_distance - race->hare_distance) / (float)(race->hare_speed);
 				sleep_ms(rem_time);
 				race->hare_time += rem_time;
 				race->hare_distance = race->finish_distance;
@@ -252,7 +253,7 @@ void* God(struct race *race)
 	while(race->repositioning_count > 0 && race->current_repositioning_counter < race->repositioning_count){
 		lock_acquire(&race->tortoise_mutex);
 		while(race->tortoise_time < race->reposition[race->current_repositioning_counter].time){
-			cond_wait(&race->repositioning_cv, &race->tortoise_mutex)
+			cond_wait(&race->repositioning_cv, &race->tortoise_mutex);
 		}
 		if(race->reposition[race->current_repositioning_counter].player == 'T') {
 			race->tortoise_distance = race->reposition[race->current_repositioning_counter].distance;
@@ -260,13 +261,13 @@ void* God(struct race *race)
 		lock_release(&race->tortoise_mutex);
 		
 		lock_acquire(&race->hare_mutex);
-		while(race->hare_time < race->reposition[race->current_repositioning_counter]){
-			cond_wait(&race->repositioning_cv, &race->hare_mutex)
+		while((race->hare_time) < (race->reposition[race->current_repositioning_counter].time)){
+			cond_wait(&race->repositioning_cv, &race->hare_mutex);
 		}
 		if(race->reposition[race->current_repositioning_counter].player == 'H') {
 			race->hare_distance = race->reposition[race->current_repositioning_counter].distance;
 		}
-		lock_release(&race->hare_mutex)
+		lock_release(&race->hare_mutex);
 
 		race->current_repositioning_counter++;
 	}
