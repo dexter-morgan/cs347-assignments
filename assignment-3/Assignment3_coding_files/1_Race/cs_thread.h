@@ -30,7 +30,7 @@ static void cond_init(struct condition *cond) __attribute__((unused));
 static void cond_wait(struct condition *cond, struct lock *lock) __attribute__((unused));
 static void cond_signal(struct condition *cond, struct lock *lock) __attribute__((unused));
 static void cond_broadcast(struct condition *cond, struct lock *lock) __attribute__((unused));
-
+	
 static void
 __assert(int satisfied, const char *message)
 {

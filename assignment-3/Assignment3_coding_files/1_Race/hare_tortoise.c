@@ -54,6 +54,8 @@ struct race {
 	
 	//	Add your custom variables here.
 	int race_finished;
+	int hare_race_finished;
+	int tortoise_race_finished;
 	double tortoise_time, hare_time;
 	int tortoise_distance, hare_distance;
 	struct lock tortoise_mutex, hare_mutex, reporter_mutex;
@@ -70,18 +72,18 @@ void* Report(struct race *race);
 void check_repositioning_hare(struct race *race)
 {
 	if(race->hare_time == race->reposition[race->current_repositioning_counter].time){
-		lock_release(&race->hare_mutex);
+		// lock_release(&race->hare_mutex);
 		cond_signal(&race->repositioning_cv, &race->hare_mutex);
-		lock_acquire(&race->hare_mutex);
+		// lock_acquire(&race->hare_mutex);
 	}
 }
 
 void check_repositioning_tortoise(struct race *race)
 {
 	if(race->tortoise_time == race->reposition[race->current_repositioning_counter].time){
-		lock_release(&race->tortoise_mutex);
+		// lock_release(&race->tortoise_mutex);
 		cond_signal(&race->repositioning_cv, &race->tortoise_mutex);
-		lock_acquire(&race->tortoise_mutex);
+		// lock_acquire(&race->tortoise_mutex);
 	}
 }
 
@@ -108,7 +110,11 @@ char init(struct race *race)
 	loop or wait until somebody wins;
 	return T/H/B for winner (Turtle/Hare/Both end at same time)
 	*/
+	printf("starting \n");
 	race->race_finished = 0;
+	race->hare_race_finished = 0;
+	race->tortoise_race_finished = 0;
+
 	race->tortoise_time = 0;
 	race->hare_time = 0;
 	race->tortoise_distance = 0;
@@ -129,11 +135,16 @@ char init(struct race *race)
 	pthread_create(&h, NULL, Hare, race);
 	pthread_create(&g, NULL, God, race);
 	pthread_create(&r, NULL, Report, race);
-	
+	printf("after creates\n");
 	pthread_join(t, NULL);
+	printf("after t joins\n");
+	
 	pthread_join(h, NULL);
+	printf("after h joins\n");
 	pthread_join(g, NULL);
-	//pthread_join(r, NULL);
+	printf("after g joins\n");
+	pthread_join(r, NULL);
+	printf("after r joins\n");
 
 	//char_h = char; ///who wins here, int or char to return
 	if(race->hare_time < race->tortoise_time) return 'H';
@@ -163,24 +174,32 @@ void* Turtle(struct race *race)
 		moveleg(3)
 		moveleg(4)
 	*/
+	printf("inside tortoise\n");
+	// return NULL;
 	while(race->tortoise_distance < race->finish_distance){
 		lock_acquire(&race->tortoise_mutex);
 		if(race->tortoise_distance + race->tortoise_speed < race->finish_distance){
 			sleep_ms(1);
 			race->tortoise_distance += race->tortoise_speed * 1;
 			race->tortoise_time += 1;
-			check_repositioning_tortoise(race);//check repositioning function tbd
+			// check_repositioning_tortoise(race);//check repositioning function tbd
 		} else{
 			float rem_time = (race->finish_distance - race->tortoise_distance) / (float)(race->tortoise_speed);
 			sleep_ms(rem_time);
 			race->tortoise_time += rem_time;
 			race->tortoise_distance = race->finish_distance;
-			check_repositioning_tortoise(race);
+			race->tortoise_race_finished = 1;
+			if (race->hare_race_finished==1)
+				race->race_finished=1;
+			// check_repositioning_tortoise(race);
 			break;
 		}
 		lock_release(&race->tortoise_mutex);
+		sleep_ms(10);
 	}
+	
 	lock_release(&race->tortoise_mutex);
+	printf("tortoise completed race. exiting ... \n");
 	pthread_exit(NULL);
 	return NULL;
   
@@ -204,30 +223,41 @@ void* Hare(struct race *race)
 			Sleep(for_a_while);
 		RunLikeCrazy_A_bit();
 	*/
+	printf("inside hare\n");
+	// return NULL;
 	while(race->hare_distance < race->finish_distance){
 		lock_acquire(&race->hare_mutex);
 		if(race->hare_distance - race->tortoise_distance > race->hare_turtle_distance_for_sleep){
+			printf("a lot ahead. going for sleep\n");
 			sleep_ms(race->hare_sleep_time);
+			printf("woke up now\n");
 			race->hare_time += race->hare_sleep_time;
-			check_repositioning_hare(race);
+			// check_repositioning_hare(race);
+			lock_release(&race->hare_mutex);
 		}
 		else{
 			if(race->hare_distance + race->hare_speed < race->finish_distance){
 				sleep_ms(1);
 				race->hare_distance += race->hare_speed * 1;
 				race->hare_time += 1;
-				check_repositioning_hare(race);
+				// printf("updated distance %d \n", race->hare_distance);
+				// check_repositioning_hare(race);
 			} else{
 				float rem_time = (race->finish_distance - race->hare_distance) / (float)(race->hare_speed);
 				sleep_ms(rem_time);
 				race->hare_time += rem_time;
 				race->hare_distance = race->finish_distance;
+				race->hare_race_finished = 1;
+				if (race->tortoise_race_finished==1)
+				race->race_finished=1;
 				break;
 			}
 			lock_release(&race->hare_mutex);
 		}
+		sleep_ms(10);
 	}
 	lock_release(&race->hare_mutex);
+	printf("hare completed race. exiting ... \n");
 	pthread_exit(NULL);
 	return NULL;
 }
@@ -247,10 +277,13 @@ void* God(struct race *race)
 	Pseudocode:
 		when time equals to Repositiong.time then move Repositioning.player by Repositioning.distance
 	*/
-	if(!(race->repositioning_count > 0)){
+	printf("inside god\n");
+	return NULL;
+
+	if((race->repositioning_count == 0)){
 		pthread_exit(NULL);
 	}
-	while(race->repositioning_count > 0 && race->current_repositioning_counter < race->repositioning_count){
+	while(race->current_repositioning_counter < race->repositioning_count){
 		lock_acquire(&race->tortoise_mutex);
 		while(race->tortoise_time < race->reposition[race->current_repositioning_counter].time){
 			cond_wait(&race->repositioning_cv, &race->tortoise_mutex);
@@ -289,8 +322,15 @@ void* Report(struct race *race)
 	Marks alloted : 10
 	Pseudocode:
 	while game not over:
-		report positions of hare and turtle format "T : distance from start line; H : distance from start linessss"
+		report positions of hare and turtle format "T : distance from start line; H : distance from start line"
 	*/
+	printf("inside report \n");
+	while (race->hare_distance < race->finish_distance || race->tortoise_distance < race->finish_distance){
+		// printf("starting printing\n");
+		printf("T : %d; H : %d \n",race->tortoise_distance, race->hare_distance );
+		sleep_ms(race->printing_delay*100);
+	}
+	pthread_exit(NULL);
 	return NULL;
 }
 

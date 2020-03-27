@@ -60,6 +60,7 @@ int parseInput(const char* filename, struct race * race) {
     if (fscanf(f,"%c\n",&(w)) != 1) { printf("wrong input file format\n"); return -1;};
     printf("+--------+--------+------------+\n");
     printf("+--------- Race Begins --------+\n");
+    printf("checking \n");
     fclose(f);
     return 0;
 }
@@ -82,6 +83,7 @@ int main(int argc, char const *argv[])
     }
     printf("Entered filename : %s\n",inputFileName);
     if (parseInput(inputFileName, race)) {return 0;}
+    printf("checking 2\n");
     char winner = init(race);
     printf("+---------- Race Ends ---------+\n");
     if (winner == w) printf("Correct output.\n");
