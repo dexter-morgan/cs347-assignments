@@ -4,7 +4,7 @@ CFLAGS?=-g -Wall -Wno-unused-value
 
 all: hare_tortoise
 
-hare_tortoise: hare_tortoise.c hare_tortoise_runner.c cs_thread.h
+hare_tortoise: hare_tortoise.c hare_tortoise1.c hare_tortoise_runner.c cs_thread.h
 	$(CC) $(CFLAGS) -o hare_tortoise hare_tortoise_runner.c -lpthread 
 
 clean:
@@ -15,3 +15,4 @@ run: hare_tortoise
 	./hare_tortoise test-file=Testcases/test1.txt
 	./hare_tortoise test-file=Testcases/test2.txt
 	./hare_tortoise test-file=Testcases/test3.txt
+	./hare_tortoise test-file=Testcases/test4.txt

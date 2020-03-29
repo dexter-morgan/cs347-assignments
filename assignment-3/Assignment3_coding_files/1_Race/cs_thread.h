@@ -92,8 +92,8 @@ static void
 cond_signal(struct condition *cond, struct lock *lock)
 {
 	// See comment in cond_wait().
-	__assert(pthread_mutex_trylock(&lock->mutex) != 0,
-		"cond_signal not called with lock held!");
+	// __assert(pthread_mutex_trylock(&lock->mutex) != 0,
+	// 	"cond_signal not called with lock held!");
 	__assert(cond->init == LOCK_COND_INIT_MAGIC,
 		"cond_signal used before cond was initialised!");
 	__assert(lock->init == LOCK_COND_INIT_MAGIC,
