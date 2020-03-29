@@ -53,7 +53,7 @@ reaction_o(struct reaction *reaction)
 		printf("o atom starting to wait. O atom id : %ld.  not enough atoms \n", pthread_self());
 		cond_wait(&reaction->h_enough, &reaction->h_count_lock);
 	}
-	lock_release(&reaction->h_count_lock);
+	
 
 	lock_acquire(&reaction->reaction_process);
 	printf("making water \n");
@@ -62,5 +62,6 @@ reaction_o(struct reaction *reaction)
 	cond_signal(&reaction->reaction_completed, &reaction->reaction_process);
 	printf("completed signalling h atoms \n");
 	lock_release(&reaction->reaction_process);
+	lock_release(&reaction->h_count_lock);
 	return;
 }
