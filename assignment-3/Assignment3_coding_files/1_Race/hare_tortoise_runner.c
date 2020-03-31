@@ -10,7 +10,7 @@
 
 int sleep_ms(int milliseconds);
 
-#include "hare_tortoise1.c"
+#include "hare_tortoise.c"
 
 char w;
 int parseInput(const char* filename, struct race * race) {

@@ -254,7 +254,7 @@ void* Report(struct race *race)
 {
 	printf("inside report \n");
     // no need to acquire lock for printing, as not changing any variable, also the resulting action doesnt change 
-    // anyway. Also, if want for acquiring locks, will not be able to print periodically
+    // anyway based on the values. Also, if wait for acquiring locks, will not be able to print periodically
 	while (race->hare_distance < race->finish_distance || race->tortoise_distance < race->finish_distance){
 		printf("T - %d; H - %d, time - %f \n",race->tortoise_distance, race->hare_distance, race->common_time );
 		sleep_ms(race->printing_delay*1);
